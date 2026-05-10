@@ -217,10 +217,13 @@ src/main/java/com/yourpackage/
 ```sql
 CREATE DATABASE food_ordering_db;
 ```
+### Default Admin Credentials
 
-git add README.md
-git commit -m "Add default admin credentials to README"
-git push origin main
+| Field | Value |
+|---|---|
+| Email | test@gmail.com |
+| Password | password123 |
+```
 
 ### Configuration
 
