@@ -11,6 +11,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import com.ijse.food_ordering.dto.OrderRequest;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -28,10 +30,12 @@ public class OrderController {
         return user.getId();
     }
 
-    @PostMapping("/place")
+     @PostMapping("/place")
     public ResponseEntity<Order> placeOrder(
-            @AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(orderService.placeOrder(getUserId(userDetails)));
+        @AuthenticationPrincipal UserDetails userDetails,
+        @Valid @RequestBody OrderRequest request) {
+    return ResponseEntity.ok(orderService.placeOrder(
+            getUserId(userDetails), request.getDeliveryAddress()));
     }
 
     @GetMapping("/my")

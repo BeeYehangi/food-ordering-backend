@@ -7,11 +7,13 @@ import com.ijse.food_ordering.repositories.*;
 import com.ijse.food_ordering.services.CartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class CartServiceImpl implements CartService {
 
     private final CartRepository cartRepository;
@@ -31,7 +33,6 @@ public class CartServiceImpl implements CartService {
         FoodItem foodItem = foodItemRepository.findById(request.getFoodItemId())
                 .orElseThrow(() -> new ResourceNotFoundException("Food item not found"));
 
-
         CartItem cartItem = CartItem.builder()
                 .cart(cart)
                 .foodItem(foodItem)
@@ -47,16 +48,15 @@ public class CartServiceImpl implements CartService {
     public Cart updateCartItem(Long userId, Long cartItemId, Integer quantity) {
         CartItem cartItem = cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart item not found"));
-
         cartItem.setQuantity(quantity);
         cartItemRepository.save(cartItem);
         return getCartByUserId(userId);
     }
 
-    @Override
-    public void removeCartItem(Long userId, Long cartItemId) {
-        cartItemRepository.deleteById(cartItemId);
-    }
+  @Override
+public void removeCartItem(Long userId, Long cartItemId) {
+    cartItemRepository.deleteByCartItemId(cartItemId);
+}
 
     @Override
     public void clearCart(Long userId) {

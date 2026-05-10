@@ -7,6 +7,7 @@ import com.ijse.food_ordering.repositories.*;
 import com.ijse.food_ordering.services.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import com.ijse.food_ordering.exceptions.BadRequestException;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -20,43 +21,42 @@ public class OrderServiceImpl implements OrderService {
     private final UserRepository userRepository;
     private final CartRepository cartRepository;
 
-    @Override
-    public Order placeOrder(Long userId) {
-        Cart cart = cartRepository.findByUser_Id(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
+   @Override
+public Order placeOrder(Long userId, String deliveryAddress) {
+    Cart cart = cartRepository.findByUser_Id(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
 
-
-        if (cart.getCartItems().isEmpty()) {
-            throw new RuntimeException("Cart is empty");
-        }
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
-
-        List<OrderItem> orderItems = cart.getCartItems().stream()
-                .map(cartItem -> OrderItem.builder()
-                        .foodItem(cartItem.getFoodItem())
-                        .quantity(cartItem.getQuantity())
-                        .price(cartItem.getFoodItem().getPrice())
-                        .build())
-                .collect(Collectors.toList());
-
-        BigDecimal total = orderItems.stream()
-                .map(item -> item.getPrice()
-                        .multiply(BigDecimal.valueOf(item.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        Order order = Order.builder()
-                .user(user)
-                .orderItems(orderItems)
-                .status(OrderStatus.PLACED)
-                .totalAmount(total)
-                .build();
-
-        orderItems.forEach(item -> item.setOrder(order));
-        return orderRepository.save(order);
+    if (cart.getCartItems().isEmpty()) {
+        throw new BadRequestException("Cart is empty");
     }
+
+    User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+    List<OrderItem> orderItems = cart.getCartItems().stream()
+            .map(cartItem -> OrderItem.builder()
+                    .foodItem(cartItem.getFoodItem())
+                    .quantity(cartItem.getQuantity())
+                    .price(cartItem.getFoodItem().getPrice())
+                    .build())
+            .collect(Collectors.toList());
+
+    BigDecimal total = orderItems.stream()
+            .map(item -> item.getPrice()
+                    .multiply(BigDecimal.valueOf(item.getQuantity())))
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+    Order order = Order.builder()
+            .user(user)
+            .orderItems(orderItems)
+            .status(OrderStatus.PLACED)
+            .totalAmount(total)
+            .deliveryAddress(deliveryAddress)
+            .build();
+
+    orderItems.forEach(item -> item.setOrder(order));
+    return orderRepository.save(order);
+}
 
     @Override
     public List<Order> getOrdersByUserId(Long userId) {

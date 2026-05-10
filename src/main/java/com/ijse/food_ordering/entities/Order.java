@@ -1,5 +1,6 @@
 package com.ijse.food_ordering.entities;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.ijse.food_ordering.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -24,13 +25,16 @@ public class Order {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<OrderItem> orderItems;
 
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
     private BigDecimal totalAmount;
+
+    private String deliveryAddress;
 
     private LocalDateTime createdAt;
 
